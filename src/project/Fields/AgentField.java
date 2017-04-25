@@ -1,4 +1,4 @@
-package project;
+package project.Fields;
 
 import javafx.scene.canvas.GraphicsContext;
 import project.Nodes.AgentNode;
@@ -11,7 +11,7 @@ import java.util.TimerTask;
 /**
  * Created by Hexray on 21.04.2017.
  */
-public class Field {
+public class AgentField {
     private FieldNode[][] fieldNodes;
     private int fieldGraphicalSize;
     private int fieldWidth;
@@ -24,7 +24,7 @@ public class Field {
 
     private GraphicsContext graphicsContext;
 
-    public Field(GraphicsContext graphicsContext, int fieldWidth, int fieldHeight, int fieldGraphicalSize){
+    public AgentField(GraphicsContext graphicsContext, int fieldWidth, int fieldHeight, int fieldGraphicalSize){
         //Determining of sizes
         this.graphicsContext = graphicsContext;
         this.fieldWidth = fieldWidth;
@@ -109,11 +109,11 @@ public class Field {
     private void generateTrash(){
         Random random = new Random();
         for (int i = 0; i < fieldWidth; i++){
-            if(random.nextBoolean()) {
-                for (int j = 0; j < fieldHeight; j++) {
-                    if(fieldNodes[i][j].isPassable()) {
+            for (int j = 0; j < fieldHeight; j++) {
+                if(fieldNodes[i][j].isPassable()) {
+                    if(Math.abs(random.nextInt(100)) < 5) {
                         int currentAmount = fieldNodes[i][j].getTrashAmount();
-                        fieldNodes[i][j].setTrashAmount(currentAmount + Math.abs(random.nextInt(2)));
+                        fieldNodes[i][j].setTrashAmount(currentAmount + 1);
                     }
                 }
             }

@@ -2,44 +2,49 @@ package project.Controllers;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
-import javafx.scene.paint.Color;
 import javafx.util.Duration;
-import project.Field;
-
-import java.util.Timer;
-import java.util.TimerTask;
+import project.Fields.AgentField;
+import project.Fields.PathSeekerField;
 
 
 public class ViewController {
+
     @FXML
-    private Canvas canvasField;
+    private Canvas canvasFieldAgent;
+    @FXML
+    public Canvas canvasFieldPathFind;
+
     @FXML
     private Label agentBouncesCountLabel;
     @FXML
     private Label trashAverageAmountLabel;
 
-    private Field field;
+    private AgentField agentField;
+    private PathSeekerField pathSeekerField;
     private Timeline timer;
 
     public void initialize(){
-        GraphicsContext graphicsContext = canvasField.getGraphicsContext2D();
-        field = new Field(graphicsContext, 20, 20, 20);
+        GraphicsContext graphicsContextAgent = canvasFieldAgent.getGraphicsContext2D();
+        agentField = new AgentField(graphicsContextAgent, 20, 20, 20);
         timer = new Timeline(new KeyFrame(Duration.millis(5), new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                field.doOneStep();
-                agentBouncesCountLabel.setText("Bounced: " + field.getAgentBounces());
-                trashAverageAmountLabel.setText("Trash avg: " + field.getTrashAverageAmount());
+                agentField.doOneStep();
+                agentBouncesCountLabel.setText("Bounced: " + agentField.getAgentBounces());
+                trashAverageAmountLabel.setText("Trash avg: " + agentField.getTrashAverageAmount());
             }
         }));
         timer.setCycleCount(Timeline.INDEFINITE);
+
+        GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
+        pathSeekerField = new PathSeekerField(graphicsContextSeeker, 20, 20, 20);
+
     }
 
     public void beginTraverseButtonHandler(ActionEvent actionEvent) {
@@ -47,10 +52,14 @@ public class ViewController {
     }
 
     public void doOneStepHandler(ActionEvent actionEvent) {
-        field.doOneStep();
+        agentField.doOneStep();
     }
 
     public void doMillionSteps(ActionEvent actionEvent) {
 
+    }
+
+    public void doPathFinding(ActionEvent actionEvent) {
+        pathSeekerField.findPath();
     }
 }
