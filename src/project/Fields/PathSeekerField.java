@@ -67,7 +67,7 @@ public class PathSeekerField {
         //visitedNodes.add(fieldNodes[agentAbsoluteX][agentAbsoluteY]);
 
         generateField();
-        generateObstacles(50);
+        generateObstacles(5);
         generateCosts();
         reDrawField();
     }
