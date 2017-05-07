@@ -4,9 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.util.Pair;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -29,6 +27,61 @@ public class AgentNode extends AbstractNode implements Drawable {
         chosenDirection = Action.Thinking;
         lastMovingStatus = ActionStatus.Successful;
         environmentInfo = new HashMap<>();
+
+        List<Integer> list = new ArrayList<>();
+        list.add(8);
+        list.add(1);
+        list.add(12);
+        list.add(3);
+
+        Collections.sort(list, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                int a = ((Integer) o1).intValue();
+                int b = ((Integer) o2).intValue();
+                return a < b ? 1 : a == b ? 0 : -1;
+            }
+        });
+
+
+        Map<Pair<Integer, Integer>, Integer> filtered = new Hashtable<>();
+        //Filtration
+        environmentInfo.forEach((KeyPair, Value) -> {
+            if(Value == 10)
+            {
+                filtered.put(KeyPair, Value);
+            }
+        });
+
+        //Remove from hashtable
+        //Duplicate
+        Map<Pair<Integer, Integer>, Integer> temp = new Hashtable<>(environmentInfo);
+
+
+        environmentInfo.forEach((KeyPair, Value) -> {
+            if(Value == 10)
+            {
+                temp.remove(KeyPair);
+            }
+        });
+        //Replace old
+        environmentInfo = temp;
+
+        //Average
+        List<Integer> listForAverage = new ArrayList<>();
+        environmentInfo.forEach((KeyPair, Value) -> {
+            listForAverage.add(Value);
+        });
+
+        IntSummaryStatistics summaryStatistics = new IntSummaryStatistics();
+        summaryStatistics = listForAverage.stream().mapToInt((x) -> x).summaryStatistics();
+
+        summaryStatistics.getAverage();
+
+
+
+        Collections.sort(list, (Integer p1, Integer p2) -> p1.compareTo(p2));
+
+        list.sort(Integer::compareTo);
     }
 
     @Override
@@ -105,6 +158,8 @@ public class AgentNode extends AbstractNode implements Drawable {
         }
 
     }
+
+
 
     public void thinkAndMove(boolean isNewPositionPassable){
         if(isNewPositionPassable)

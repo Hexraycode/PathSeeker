@@ -4,6 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.util.Pair;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 

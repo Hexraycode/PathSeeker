@@ -8,13 +8,17 @@ import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.util.Duration;
 import project.Fields.AgentField;
 import project.Fields.PathSeekerField;
 
 
 public class ViewController {
-
+    @FXML
+    private TextField fieldSize;
+    @FXML
+    private TextField trashProbability;
     @FXML
     private Canvas canvasFieldAgent;
     @FXML
@@ -55,8 +59,9 @@ public class ViewController {
         agentField.doOneStep();
     }
 
-    public void doMillionSteps(ActionEvent actionEvent) {
-
+    public void changeField(ActionEvent actionEvent) {
+        agentField.setFieldGraphicalSize(Integer.parseInt(fieldSize.getText()));
+        agentField.setTrashProbabilityAmount(Integer.parseInt(trashProbability.getText()));
     }
 
     public void doPathFinding(ActionEvent actionEvent) {

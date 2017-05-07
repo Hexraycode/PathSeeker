@@ -27,9 +27,14 @@
                                        <children>
                                           <Button mnemonicParsing="false" onAction="#doOneStepHandler" text="Do one step" />
                                           <Button mnemonicParsing="false" onAction="#beginTraverseButtonHandler" text="Begin traverse" />
-                                           <Button mnemonicParsing="false" onAction="#doMillionSteps" text="Million steps" />
+
                                           <Label fx:id="agentBouncesCountLabel" text="Bounces: " />
                                           <Label fx:id="trashAverageAmountLabel" text="Trash avg: " />
+                                           <Label text="Trash probability amount: " />
+                                          <TextField fx:id="trashProbability" promptText="Trash probability amount" text="1" />
+                                           <Label text="Field size: " />
+                                          <TextField fx:id="fieldSize" promptText="Field size" text="20" />
+                                           <Button mnemonicParsing="false" onAction="#changeField" text="Change" />
                                        </children>
                                        <padding>
                                           <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

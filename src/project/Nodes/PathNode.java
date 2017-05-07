@@ -2,16 +2,21 @@ package project.Nodes;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Path;
+
+import java.util.Comparator;
 
 /**
  * Created by Hexray on 20.04.2017.
  */
-public class PathNode extends AbstractNode implements Drawable {
+public class PathNode extends AbstractNode implements Drawable, Comparable<PathNode> {
     private boolean isPassable;
     private int cost;
+    private double distanceToTarget;
 
-    public PathNode(GraphicsContext graphicsContext){
+    public PathNode(GraphicsContext graphicsContext, double distanceToTarget) {
         this.graphicsContext = graphicsContext;
+        this.distanceToTarget = distanceToTarget;
     }
 
     public boolean isPassable() {
@@ -20,6 +25,14 @@ public class PathNode extends AbstractNode implements Drawable {
 
     public void setPassable(boolean passable) {
         isPassable = passable;
+    }
+
+    public double getDistanceToTarget() {
+        return distanceToTarget;
+    }
+
+    public void setDistanceToTarget(double distanceToTarget) {
+        this.distanceToTarget = distanceToTarget;
     }
 
     public int getCost() {
@@ -52,11 +65,18 @@ public class PathNode extends AbstractNode implements Drawable {
             graphicsContext.setFill(Color.DARKRED);
         }
         graphicsContext.fillRoundRect(cellSize*x + 1, cellSize*y + 1, cellSize - 1, cellSize - 1, 0, 0);
-        //Draw trash amount
+        //Draw cost amount
         if(isPassable)
         {
             graphicsContext.setFill(Color.BLUE);
             graphicsContext.fillText(String.valueOf(cost), cellSize*x + 1, cellSize*(y+1) - cellSize/2.7);
         }
+    }
+
+    @Override
+    public int compareTo(PathNode o) {
+        Double thisWeight = this.cost + this.distanceToTarget;
+        Double otherWeight = o.getCost() + o.getDistanceToTarget();
+        return thisWeight.compareTo(otherWeight);
     }
 }

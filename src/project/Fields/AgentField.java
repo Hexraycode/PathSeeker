@@ -4,6 +4,7 @@ import javafx.scene.canvas.GraphicsContext;
 import project.Nodes.AgentNode;
 import project.Nodes.FieldNode;
 
+import java.util.Comparator;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,14 +23,20 @@ public class AgentField {
     private int agentAbsoluteY;
     private int agentBounces;
 
+    private int trashProbabilityAmount;
+
     private GraphicsContext graphicsContext;
 
     public AgentField(GraphicsContext graphicsContext, int fieldWidth, int fieldHeight, int fieldGraphicalSize){
+        Comparator<FieldNode> comparator = Comparator.comparing(fieldNode -> fieldNode.isPassable());
+        comparator = comparator.thenComparing(Comparator.comparing(fieldNode -> fieldNode.getTrashAmount()));
+
         //Determining of sizes
         this.graphicsContext = graphicsContext;
         this.fieldWidth = fieldWidth;
         this.fieldHeight = fieldHeight;
         this.fieldGraphicalSize = fieldGraphicalSize;
+        this.trashProbabilityAmount = 1;
         //Creating of nodes
         fieldNodes = new FieldNode[fieldWidth][fieldHeight];
         for (int i = 0; i < fieldWidth; i++){
@@ -45,6 +52,38 @@ public class AgentField {
         generateField();
         generateObstacles(50);
         reDrawField();
+    }
+
+    public int getTrashProbabilityAmount() {
+        return trashProbabilityAmount;
+    }
+
+    public void setTrashProbabilityAmount(int trashProbabilityAmount) {
+        this.trashProbabilityAmount = trashProbabilityAmount;
+    }
+
+    public int getFieldGraphicalSize() {
+        return fieldGraphicalSize;
+    }
+
+    public void setFieldGraphicalSize(int fieldGraphicalSize) {
+        this.fieldGraphicalSize = fieldGraphicalSize;
+    }
+
+    public int getFieldWidth() {
+        return fieldWidth;
+    }
+
+    public void setFieldWidth(int fieldWidth) {
+        this.fieldWidth = fieldWidth;
+    }
+
+    public int getFieldHeight() {
+        return fieldHeight;
+    }
+
+    public void setFieldHeight(int fieldHeight) {
+        this.fieldHeight = fieldHeight;
     }
 
     private boolean isThereNoObstacleForAgent(AgentNode.Action agentDesiredPosition){
@@ -113,7 +152,7 @@ public class AgentField {
                 if(fieldNodes[i][j].isPassable()) {
                     if(Math.abs(random.nextInt(100)) < 5) {
                         int currentAmount = fieldNodes[i][j].getTrashAmount();
-                        fieldNodes[i][j].setTrashAmount(currentAmount + 1);
+                        fieldNodes[i][j].setTrashAmount(currentAmount + trashProbabilityAmount);
                     }
                 }
             }
@@ -185,4 +224,5 @@ public class AgentField {
         sum /= passableCount;
         return sum;
     }
+
 }
