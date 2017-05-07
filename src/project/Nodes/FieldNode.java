@@ -10,8 +10,8 @@ public class FieldNode extends AbstractNode implements Drawable {
     private boolean isPassable;
     private int trashAmount;
 
-    public FieldNode(GraphicsContext graphicsContext){
-        this.graphicsContext = graphicsContext;
+    public FieldNode(GraphicsContext graphicsContext, Color color){
+        super(graphicsContext, color);
     }
 
     public boolean isPassable() {

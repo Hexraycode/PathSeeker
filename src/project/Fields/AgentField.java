@@ -1,6 +1,7 @@
 package project.Fields;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import project.Nodes.AgentNode;
 import project.Nodes.FieldNode;
 
@@ -41,14 +42,14 @@ public class AgentField {
         fieldNodes = new FieldNode[fieldWidth][fieldHeight];
         for (int i = 0; i < fieldWidth; i++){
             for (int j = 0; j < fieldHeight; j++) {
-                fieldNodes[i][j] = new FieldNode(graphicsContext);
+                fieldNodes[i][j] = new FieldNode(graphicsContext, Color.LIGHTGREEN);
             }
         }
         //Creating of agent
         this.agentBounces = 0;
         this.agentAbsoluteX = 3;
         this.agentAbsoluteY = 3;
-        agentNode = new AgentNode(graphicsContext);
+        agentNode = new AgentNode(graphicsContext, Color.ORANGE);
         generateField();
         generateObstacles(50);
         reDrawField();

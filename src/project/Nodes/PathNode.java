@@ -14,8 +14,8 @@ public class PathNode extends AbstractNode implements Drawable, Comparable<PathN
     private int cost;
     private double distanceToTarget;
 
-    public PathNode(GraphicsContext graphicsContext, double distanceToTarget) {
-        this.graphicsContext = graphicsContext;
+    public PathNode(GraphicsContext graphicsContext, Color color, double distanceToTarget) {
+        super(graphicsContext, color);
         this.distanceToTarget = distanceToTarget;
     }
 
@@ -58,7 +58,7 @@ public class PathNode extends AbstractNode implements Drawable, Comparable<PathN
         graphicsContext.fillRoundRect(cellSize*x, cellSize*y, cellSize, cellSize, 0, 0);
         //Determine the color of the node
         if(isPassable){
-            graphicsContext.setFill(Color.LIGHTGREEN);
+            graphicsContext.setFill(color);
         }
         else
         {

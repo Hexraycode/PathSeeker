@@ -64,7 +64,19 @@ public class ViewController {
         agentField.setTrashProbabilityAmount(Integer.parseInt(trashProbability.getText()));
     }
 
-    public void doPathFinding(ActionEvent actionEvent) {
-        pathSeekerField.findPath();
+    public void doDijkstra(ActionEvent actionEvent) {
+        pathSeekerField.findPathDijkstra();
+    }
+
+    public void doAStar(ActionEvent actionEvent) {
+        pathSeekerField.findPathAStar();
+    }
+
+    public void doDStar(ActionEvent actionEvent) {
+        pathSeekerField.findPathDStar();
+    }
+
+    public void doRegenerateField(ActionEvent actionEvent) {
+        pathSeekerField.regenerateField();
     }
 }

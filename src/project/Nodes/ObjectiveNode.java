@@ -16,8 +16,8 @@ public class ObjectiveNode extends AbstractNode implements Drawable {
     double[] polygonXPoints;
     double[] polygonYPoints;
 
-    public ObjectiveNode(GraphicsContext graphicsContext){
-        this.graphicsContext = graphicsContext;
+    public ObjectiveNode(GraphicsContext graphicsContext, Color color){
+        super(graphicsContext, color);
         polygonXPoints = new double[4];
         polygonYPoints = new double[4];
     }
@@ -30,7 +30,7 @@ public class ObjectiveNode extends AbstractNode implements Drawable {
         graphicsContext.setFill(Color.DARKGRAY);
         graphicsContext.fillRoundRect(cellSize*x + 1, cellSize*y + 1, cellSize - 1, cellSize - 1, 0, 0);
         //Determine the color of the agent by the last action status
-        graphicsContext.setFill(Color.YELLOW);
+        graphicsContext.setFill(color);
 
         polygonXPoints[0] = cellSize*x + 1;
         polygonXPoints[1] = cellSize*x + 1 + cellSize/2;

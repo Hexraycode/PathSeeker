@@ -20,8 +20,8 @@ public class AgentNode extends AbstractNode implements Drawable {
     double[] polygonXPoints;
     double[] polygonYPoints;
 
-    public AgentNode(GraphicsContext graphicsContext){
-        this.graphicsContext = graphicsContext;
+    public AgentNode(GraphicsContext graphicsContext, Color color){
+        super(graphicsContext, color);
         polygonXPoints = new double[4];
         polygonYPoints = new double[4];
         chosenDirection = Action.Thinking;
@@ -94,7 +94,7 @@ public class AgentNode extends AbstractNode implements Drawable {
         //Determine the color of the agent by the last action status
         if(lastMovingStatus == ActionStatus.Successful)
         {
-            graphicsContext.setFill(Color.ORANGE);
+            graphicsContext.setFill(color);
         }
         else
         {
