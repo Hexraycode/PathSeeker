@@ -9,7 +9,7 @@ import java.util.Comparator;
 /**
  * Created by Hexray on 20.04.2017.
  */
-public class PathNode extends AbstractNode implements Drawable, Comparable<PathNode> {
+public class PathNode extends AbstractNode implements Drawable {
     private boolean isPassable;
     private int cost;
     private double distanceToTarget;
@@ -73,10 +73,4 @@ public class PathNode extends AbstractNode implements Drawable, Comparable<PathN
         }
     }
 
-    @Override
-    public int compareTo(PathNode o) {
-        Double thisWeight = this.cost + this.distanceToTarget;
-        Double otherWeight = o.getCost() + o.getDistanceToTarget();
-        return thisWeight.compareTo(otherWeight);
-    }
 }

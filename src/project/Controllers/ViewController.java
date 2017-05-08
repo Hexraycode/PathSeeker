@@ -47,7 +47,7 @@ public class ViewController {
         timer.setCycleCount(Timeline.INDEFINITE);
 
         GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
-        pathSeekerField = new PathSeekerField(graphicsContextSeeker, 10, 10, 30);
+        pathSeekerField = new PathSeekerField(graphicsContextSeeker, 20, 20, 20);
 
     }
 

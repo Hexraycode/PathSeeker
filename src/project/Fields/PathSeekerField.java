@@ -2,13 +2,10 @@ package project.Fields;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Path;
 import javafx.util.Pair;
 import project.Nodes.*;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 /**
  * Created by Hexray on 21.04.2017.
@@ -28,9 +25,9 @@ public class PathSeekerField {
     private int objectiveAbsoluteY;
 
     private List<PathNodeForDijkstra> listDijkstra;
-//  private Queue<PathNode> priorityQueue;
+    private Queue<PathNodeForAStar> openList;
 
-    private List<PathNode> visitedNodes;
+    private List<PathNodeForAStar> closedList;
 
     private GraphicsContext graphicsContext;
 
@@ -40,9 +37,8 @@ public class PathSeekerField {
         this.fieldWidth = fieldWidth;
         this.fieldHeight = fieldHeight;
         this.fieldGraphicalSize = fieldGraphicalSize;
-        // priorityQueue = new PriorityQueue<>();
-        this.objectiveAbsoluteX = 7;
-        this.objectiveAbsoluteY = 7;
+        this.objectiveAbsoluteX = 17;
+        this.objectiveAbsoluteY = 17;
         this.agentAbsoluteX = 3;
         this.agentAbsoluteY = 3;
         generateField();
@@ -50,7 +46,8 @@ public class PathSeekerField {
 
     private double computeDistance(Integer x1, Integer y1, Integer x2, Integer y2)
     {
-        Double distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+//        Double distance = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+        Double distance = 10 * (Math.abs(x1 - x2) + Math.abs(y1 - y2))/1.0;
         return distance;
     }
 
@@ -75,13 +72,11 @@ public class PathSeekerField {
     }
 
     private void generateField(){
-        listDijkstra = new ArrayList<>();
-        visitedNodes = new ArrayList<>();
         //Determining of nodes
         fieldNodes = new PathNode[fieldWidth][fieldHeight];
         for (int i = 0; i < fieldWidth; i++){
             for (int j = 0; j < fieldHeight; j++) {
-                fieldNodes[i][j] = new PathNode(graphicsContext, Color.LIGHTGREEN, computeDistance(i,j, 7,7));
+                fieldNodes[i][j] = new PathNode(graphicsContext, Color.LIGHTGREEN, computeDistance(i,j, 17,17));
             }
         }
         //Creating of objective
@@ -103,7 +98,7 @@ public class PathSeekerField {
             makeNonPassable(0, i);
             makeNonPassable(fieldWidth - 1, i);
         }
-        generateObstacles(20);
+        generateObstacles(70);
         generateCosts();
         reDrawField();
     }
@@ -113,7 +108,7 @@ public class PathSeekerField {
         for (int i = 0; i < fieldWidth; i++){
             for (int j = 0; j < fieldHeight; j++) {
                 if(fieldNodes[i][j].isPassable()) {
-                    fieldNodes[i][j].setCost(random.nextInt(50));
+                    fieldNodes[i][j].setCost(random.nextInt(20) + 1);
                 }
             }
         }
@@ -140,30 +135,90 @@ public class PathSeekerField {
     }
 
     public void findPathAStar(){
+        // Вспомогательные списки
+        closedList = new ArrayList<>();
+        openList = new PriorityQueue<>();
+        // Добавим стартовый узел в открытый список
+        PathNodeForAStar startNode = new PathNodeForAStar(fieldNodes[agentAbsoluteX][agentAbsoluteY],
+                new Pair<>(agentAbsoluteX,agentAbsoluteY));
+        startNode.setMinCost(0.0);
+        startNode.setFunction(startNode.getDistanceToTarget());
+        openList.add(startNode);
 
-        // Oleg A*
-//        List<PathNode> nearPassableNodes = getNearPassableNodes();
-//        priorityQueue.addAll(nearPassableNodes);
-//        boolean newFieldFound = false;
-//        while (newFieldFound == false) {
-//            PathNode bestWayNode = priorityQueue.peek();
-//            priorityQueue.remove(bestWayNode);
-//            Pair<Integer, Integer> coordinatesForNode = getCoordinatesForNode(bestWayNode);
-//            //Moving agent to new node
-//            if (!visitedNodes.contains(fieldNodes[coordinatesForNode.getKey()][coordinatesForNode.getValue()])) {
-//                agentAbsoluteX = coordinatesForNode.getKey();
-//                agentAbsoluteY = coordinatesForNode.getValue();
-//                visitedNodes.add(fieldNodes[agentAbsoluteX][agentAbsoluteY]);
-//                newFieldFound = true;
-//            }
-//        }
-//        if(agentAbsoluteX == objectiveAbsoluteX && agentAbsoluteY == objectiveAbsoluteY)
-//            throw new RuntimeException("Победа!");
-//        reDrawField();
+        // Подсчет итераций
+        Integer iterator = 0;
+        Boolean objectiveReached = false;
 
+        while(!openList.isEmpty()){
+            // Берем элемент с наименьшим значением евристики
+            PathNodeForAStar currentNode = openList.peek();
+            // Проверяем не достиг ли алгоритм цели
+            if(currentNode.getCoordinates().getKey() == objectiveAbsoluteX &&
+                    currentNode.getCoordinates().getValue() == objectiveAbsoluteY) {
+                objectiveReached = true;
+                System.out.println("Алгоритм A* нашел путь стоимостью " + currentNode.getMinCost() + " за "
+                        + iterator + " итераций: ");
+                printSolveAStar(currentNode);
+                break;
+            }
+            openList.remove();
+            closedList.add(currentNode);
+            Pair<Integer, Integer> coordinates = getCoordinatesForNode(currentNode);
+
+//            System.out.println("Итерация " + iterator +". Координаты: " + coordinates.toString() +
+//                    ". Стоимость пути: " + currentNode.getMinCost() + ". До цели: " + currentNode.getDistanceToTarget()
+//                    + ". Функция: " + (currentNode.getMinCost() + currentNode.getDistanceToTarget()));
+            iterator++;
+            fieldNodes[coordinates.getKey()][coordinates.getValue()].setColor(Color.GREEN);
+
+            // Для каждой соседней клетки
+            List<PathNode> nearPassableNodes = getNearPassableNodes(coordinates);
+            for (PathNode nearNode : nearPassableNodes) {
+                // Если клетка не состоит в закрытом списке
+                Pair<Integer, Integer> nearCoordinates = getCoordinatesForNode(nearNode);
+                if (!closedList.stream().filter(d -> d.getCoordinates().equals(getCoordinatesForNode(nearNode)))
+                        .findFirst().isPresent()){
+                    // Составим новую минимальную стоимость
+                    Double tempMinCost = currentNode.getMinCost() + nearNode.getCost();
+                    Optional<PathNodeForAStar> optNodeFromOpenList = openList.stream().filter(d -> d.getCoordinates()
+                            .equals(getCoordinatesForNode(nearNode))).findFirst();
+                    PathNodeForAStar newNode;
+
+                    if(!optNodeFromOpenList.isPresent()){
+                        newNode = new PathNodeForAStar(nearNode, nearCoordinates);
+                        newNode.setParentNodeForAStar(currentNode);
+                        newNode.setMinCost(tempMinCost);
+                        newNode.setFunction(tempMinCost + newNode.getDistanceToTarget());
+                        openList.add(newNode);
+                        fieldNodes[nearCoordinates.getKey()][nearCoordinates.getValue()].setColor(Color.LIGHTPINK);
+                    }
+                    else if (tempMinCost < optNodeFromOpenList.get().getMinCost()){
+                        newNode = optNodeFromOpenList.get();
+                        newNode.setParentNodeForAStar(currentNode);
+                        newNode.setMinCost(tempMinCost);
+                        newNode.setFunction(tempMinCost + newNode.getDistanceToTarget());
+                    }
+
+                }
+            }
+        }
+        if (!objectiveReached)
+            System.out.println("Цель недостижима для алгоритма A*");
+        reDrawField();
+    }
+
+    private void printSolveAStar(PathNodeForAStar node) {
+        if (node.getParentNodeForAStar() != null){
+            printSolveAStar(node.getParentNodeForAStar());
+            fieldNodes[node.getCoordinates().getKey()][node.getCoordinates().getValue()].setColor(Color.RED);
+//            System.out.println("Клетка с координатами X=" + node.getCoordinates().getKey() + " Y=" +
+//                    + node.getCoordinates().getValue() + " (Стоимость прохода клетки:" + node.getCost()
+//                    + " Текущая стоимость: " + node.getMinCost() + ")");
+        }
     }
 
     public void findPathDijkstra() {
+        listDijkstra = new ArrayList<>();
         // создадим список всех вершин, в которых нету преград
         for (int i = 0; i < fieldWidth; i++)
         {
@@ -184,7 +239,7 @@ public class PathSeekerField {
         if(pathNodeForDijkstra.isPresent()) {
             PathNodeForDijkstra currentNode = pathNodeForDijkstra.get();
             currentNode.setConst(true);
-            currentNode.setMinCost(0);
+            currentNode.setMinCost(0.0);
             Integer iterator = 1;
             // Пока не достигнем цели повторяем Шаг 2 и 3
             Boolean objectiveReached = false;
@@ -194,7 +249,6 @@ public class PathSeekerField {
                 Pair<Integer,Integer> coord = getCoordinatesForNode(currentNode);
 
                 fieldNodes[coord.getKey()][coord.getValue()].setColor(Color.YELLOW);
-                reDrawField();
                 // берем смежные достижимые вершины
                 List<PathNode> nearPassableNodes = getNearPassableNodes(coord);
                 // для каждой из них пересчитаем возможное уменьшение стоимости
@@ -211,13 +265,14 @@ public class PathSeekerField {
                             nearNode.setMinCost(newCost);
                         }
                     }
-                    else {
-                        System.out.println("Заданный элемент не найден в списке");
-                    }
+                    else System.out.println("Заданный элемент не найден в списке");
                 }
 
+//                System.out.println("Итерация " + iterator +". Координаты: " + coord.toString() +
+//                        ". Стоимость пути: " + currentNode.getMinCost());
                 // Шаг 3: Выбираем со всего множества вершин с непостоянными метками ту вершину, у которой минимальная
                 // стоимость достижения (из listDijkstra элемент c min minCost, у которого isConst = false)
+                iterator++;
                 currentNode = listDijkstra.stream()
                         .filter(x -> x.getConst() == false)
                         .min(Comparator.comparingDouble(PathNodeForDijkstra::getMinCost))
@@ -226,30 +281,30 @@ public class PathSeekerField {
 
                 // Шаг 4: Проверяем достигнута ли цель
                 if(currentNode.getCoordinates().getKey() == objectiveAbsoluteX &&
-                        currentNode.getCoordinates().getValue() == objectiveAbsoluteY)
+                        currentNode.getCoordinates().getValue() == objectiveAbsoluteY) {
                     objectiveReached = true;
+//                    System.out.println("Итерация " + iterator +". Координаты: " + objectiveAbsoluteX
+//                            + " " + objectiveAbsoluteY + ". Стоимость пути: " + currentNode.getMinCost());
+                    iterator++;
+                }
 
-                System.out.println("Итерация " + iterator++ +". Координаты текущей вершины: " + coord.toString() +
-                        ". Стоимость пути: " + currentNode.getMinCost());
             }
-            System.out.println("Алгоритм Дейкстры нашел кратчайший путь стоимостью " + currentNode.getMinCost() + ": ");
+            System.out.println("Алгоритм Дейкстры нашел кратчайший путь стоимостью " + currentNode.getMinCost() + " за "
+                    + iterator + " итераций: ");
             // Шаг 5: Строим маршрут
             printSolveDijkstra(currentNode);
         }
-        else {
-            System.out.println("Стартовый элемент не найден в списке");
-        }
+        else System.out.println("Стартовый элемент не найден в списке");
+        reDrawField();
     }
 
     private void printSolveDijkstra(PathNodeForDijkstra node) {
         if (node.getParentNodeForDijkstra() != null){
             printSolveDijkstra(node.getParentNodeForDijkstra());
             fieldNodes[node.getCoordinates().getKey()][node.getCoordinates().getValue()].setColor(Color.ORANGE);
-            reDrawField();
-
-            System.out.println("Клетка с координатами X=" + node.getCoordinates().getKey() + " Y=" +
-                    + node.getCoordinates().getValue() + " (Стоимость прохода клетки:" + node.getCost()
-                    + " Текущая стоимость: " + node.getMinCost() + ")");
+//            System.out.println("Клетка с координатами X=" + node.getCoordinates().getKey() + " Y=" +
+//                    + node.getCoordinates().getValue() + " (Стоимость прохода клетки:" + node.getCost()
+//                    + " Текущая стоимость: " + node.getMinCost() + ")");
         }
     }
 
@@ -267,6 +322,19 @@ public class PathSeekerField {
         return null;
     }
 
+    private Pair<Integer, Integer> getCoordinatesForNode(PathNodeForAStar pathNode){
+        for (int i = 0; i < fieldWidth; i++)
+        {
+            for (int j = 0; j < fieldHeight; j++)
+            {
+                if(i == pathNode.getCoordinates().getKey() && j == pathNode.getCoordinates().getValue())
+                {
+                    return new Pair<>(i, j);
+                }
+            }
+        }
+        return null;
+    }
     private Pair<Integer, Integer> getCoordinatesForNode(PathNode pathNode){
         for (int i = 0; i < fieldWidth; i++)
         {

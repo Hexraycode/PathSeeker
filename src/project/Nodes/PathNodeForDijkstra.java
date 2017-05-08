@@ -53,4 +53,5 @@ public class PathNodeForDijkstra extends PathNode {
     public void setCoordinates(Pair<Integer, Integer> coordinates) {
         this.coordinates = coordinates;
     }
+
 }
