@@ -5,12 +5,14 @@ import javafx.scene.paint.Color;
 import javafx.util.Pair;
 import project.Nodes.*;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
  * Created by Hexray on 21.04.2017.
  */
-public class PathSeekerField {
+public class PathSeekerField implements Serializable {
+    private static final long serialVersionUID = 123456789L;
     private PathNode[][] fieldNodes;
     private int fieldGraphicalSize;
     private int fieldWidth;
@@ -29,7 +31,7 @@ public class PathSeekerField {
 
     private List<PathNodeForAStar> closedList;
 
-    private GraphicsContext graphicsContext;
+    private transient GraphicsContext graphicsContext;
 
     public PathSeekerField(GraphicsContext graphicsContext, int fieldWidth, int fieldHeight, int fieldGraphicalSize){
         // Determining of sizes
@@ -37,11 +39,7 @@ public class PathSeekerField {
         this.fieldWidth = fieldWidth;
         this.fieldHeight = fieldHeight;
         this.fieldGraphicalSize = fieldGraphicalSize;
-        this.objectiveAbsoluteX = 17;
-        this.objectiveAbsoluteY = 17;
-        this.agentAbsoluteX = 3;
-        this.agentAbsoluteY = 3;
-        generateField();
+        generateField(3, 3, 17, 17);
     }
 
     private double computeDistance(Integer x1, Integer y1, Integer x2, Integer y2)
@@ -51,7 +49,7 @@ public class PathSeekerField {
         return distance;
     }
 
-    private void reDrawField(){
+    public void reDrawField(){
         for (int i = 0; i < fieldWidth ; i++) {
             for (int j = 0; j < fieldHeight ; j++) {
                 fieldNodes[i][j].draw(i, j, fieldGraphicalSize);
@@ -71,12 +69,17 @@ public class PathSeekerField {
         fieldNodes[x][y].draw(x, y, fieldGraphicalSize);
     }
 
-    private void generateField(){
+    public void generateField(int agentX, int agentY, int objectiveX, int objectiveY){
+        this.objectiveAbsoluteX = objectiveX;
+        this.objectiveAbsoluteY = objectiveY;
+        this.agentAbsoluteX = agentX;
+        this.agentAbsoluteY = agentY;
         //Determining of nodes
         fieldNodes = new PathNode[fieldWidth][fieldHeight];
         for (int i = 0; i < fieldWidth; i++){
             for (int j = 0; j < fieldHeight; j++) {
-                fieldNodes[i][j] = new PathNode(graphicsContext, Color.LIGHTGREEN, computeDistance(i,j, 17,17));
+                fieldNodes[i][j] = new PathNode(graphicsContext, Color.LIGHTGREEN,
+                        computeDistance(i,j, this.objectiveAbsoluteX, this.objectiveAbsoluteY));
             }
         }
         //Creating of objective
@@ -127,6 +130,17 @@ public class PathSeekerField {
                     || (objectiveAbsoluteX == x && objectiveAbsoluteY == y));
 
             makeNonPassable(x, y);
+        }
+    }
+
+    public void setGlobalGraphicsContext(GraphicsContext globalGraphicsContext){
+        this.graphicsContext = globalGraphicsContext;
+        agentNode.setGraphicsContext(globalGraphicsContext);
+        objectiveNode.setGraphicsContext(globalGraphicsContext);
+        for (int i = 0; i < fieldWidth; i++) {
+            for (int j = 0; j < fieldHeight; j++) {
+                fieldNodes[i][j].setGraphicsContext(globalGraphicsContext);
+            }
         }
     }
 
@@ -387,9 +401,5 @@ public class PathSeekerField {
             passableNodes.add(left);
 
         return passableNodes;
-    }
-
-    public void regenerateField() {
-        generateField();
     }
 }

@@ -63,6 +63,27 @@
                                  <children>
                                      <VBox layoutX="38.0" prefHeight="398.0" prefWidth="176.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                          <children>
+                                             <Label text="Agent position: " />
+                                             <HBox prefHeight="30.0" prefWidth="200.0">
+                                             <children>
+                                                 <TextField fx:id="agentPositionX" promptText="Agent pos x" text="3" />
+                                                 <TextField fx:id="agentPositionY" promptText="Agent pos y" text="3" />
+                                             </children>
+                                             </HBox>
+                                             <Label text="Objective position: " />
+                                             <HBox prefHeight="30.0" prefWidth="200.0">
+                                                 <children>
+                                                     <TextField fx:id="objectivePositionX" promptText="Objective pos x" text="17" />
+                                                     <TextField fx:id="objectivePositionY" promptText="Objective pos y" text="17" />
+                                                 </children>
+                                             </HBox>
+                                             <HBox prefHeight="30.0" prefWidth="200.0">
+                                                 <children>
+                                                     <Button mnemonicParsing="false" onAction="#saveField" text="Save" />
+                                                     <Button mnemonicParsing="false" onAction="#loadField" text="Load" />
+                                                 </children>
+                                             </HBox>
+
                                              <Button mnemonicParsing="false" onAction="#doRegenerateField" text="Regenerate field" />
                                              <Button mnemonicParsing="false" onAction="#doDijkstra" text="Dijkstra algorithm" />
                                              <Button mnemonicParsing="false" onAction="#doAStar" text="A* algorithm" />
