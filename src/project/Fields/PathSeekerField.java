@@ -14,6 +14,7 @@ import java.util.*;
 public class PathSeekerField implements Serializable {
     private static final long serialVersionUID = 123456789L;
     private PathNode[][] fieldNodes;
+
     private int fieldGraphicalSize;
     private int fieldWidth;
     private int fieldHeight;
@@ -59,12 +60,12 @@ public class PathSeekerField implements Serializable {
         objectiveNode.draw(objectiveAbsoluteX, objectiveAbsoluteY, fieldGraphicalSize);
     }
 
-    private void makeNonPassable(int x, int y){
+    public void makeNonPassable(int x, int y){
         fieldNodes[x][y].setPassable(false);
         fieldNodes[x][y].draw(x, y, fieldGraphicalSize);
     }
 
-    private void makePassable(int x, int y){
+    public void makePassable(int x, int y){
         fieldNodes[x][y].setPassable(true);
         fieldNodes[x][y].draw(x, y, fieldGraphicalSize);
     }
@@ -401,5 +402,61 @@ public class PathSeekerField implements Serializable {
             passableNodes.add(left);
 
         return passableNodes;
+    }
+
+    public int getFieldGraphicalSize() {
+        return fieldGraphicalSize;
+    }
+
+    public void setFieldGraphicalSize(int fieldGraphicalSize) {
+        this.fieldGraphicalSize = fieldGraphicalSize;
+    }
+
+    public boolean isPassable(int x, int y){
+        if((agentAbsoluteX == x && agentAbsoluteY == y) || (objectiveAbsoluteX == x && objectiveAbsoluteY == y))
+        {
+            return false;
+        }
+        return fieldNodes[x][y].isPassable();
+    }
+
+    public int getAgentAbsoluteX() {
+        return agentAbsoluteX;
+    }
+
+    public void setAgentAbsoluteX(int agentAbsoluteX) {
+        this.agentAbsoluteX = agentAbsoluteX;
+    }
+
+    public int getAgentAbsoluteY() {
+        return agentAbsoluteY;
+    }
+
+    public void setAgentAbsoluteY(int agentAbsoluteY) {
+        this.agentAbsoluteY = agentAbsoluteY;
+    }
+
+    public int getObjectiveAbsoluteX() {
+        return objectiveAbsoluteX;
+    }
+
+    public void setObjectiveAbsoluteX(int objectiveAbsoluteX) {
+        this.objectiveAbsoluteX = objectiveAbsoluteX;
+    }
+
+    public int getObjectiveAbsoluteY() {
+        return objectiveAbsoluteY;
+    }
+
+    public void setObjectiveAbsoluteY(int objectiveAbsoluteY) {
+        this.objectiveAbsoluteY = objectiveAbsoluteY;
+    }
+
+    public int getCostAmount(int x, int y){
+        return fieldNodes[x][y].getCost();
+    }
+
+    public void setCostAmount(int x, int y, int cost){
+        fieldNodes[x][y].setCost(cost);
     }
 }

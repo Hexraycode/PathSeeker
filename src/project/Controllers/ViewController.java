@@ -9,17 +9,19 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Duration;
+import javafx.util.Pair;
 import project.Fields.AgentField;
 import project.Fields.PathSeekerField;
 
 import java.io.*;
+import java.util.Optional;
 
 
 public class ViewController {
-    @FXML
-    private AnchorPane ap;
     @FXML
     public TextField agentPositionX;
     @FXML
@@ -45,21 +47,95 @@ public class ViewController {
     private PathSeekerField pathSeekerField;
     private Timeline timer;
 
+    private boolean isObjectiveDragged;
+    private boolean isAgentDragged;
+
     public void initialize(){
         GraphicsContext graphicsContextAgent = canvasFieldAgent.getGraphicsContext2D();
         agentField = new AgentField(graphicsContextAgent, 20, 20, 20);
-        timer = new Timeline(new KeyFrame(Duration.millis(5), new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                agentField.doOneStep();
-                agentBouncesCountLabel.setText("Bounced: " + agentField.getAgentBounces());
-                trashAverageAmountLabel.setText("Trash avg: " + agentField.getTrashAverageAmount());
-            }
+        timer = new Timeline(new KeyFrame(Duration.millis(5), event -> {
+            agentField.doOneStep();
+            agentBouncesCountLabel.setText("Bounced: " + agentField.getAgentBounces());
+            trashAverageAmountLabel.setText("Trash avg: " + agentField.getTrashAverageAmount());
         }));
         timer.setCycleCount(Timeline.INDEFINITE);
-
         GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
         pathSeekerField = new PathSeekerField(graphicsContextSeeker, 20, 20, 20);
+        //Make node passable or non-passable
+        canvasFieldPathFind.addEventHandler(MouseEvent.MOUSE_PRESSED,
+                t -> {
+                    Pair<Integer, Integer> coordinates = getCoordinatesFromClick(pathSeekerField, t);
+                    if(t.isPrimaryButtonDown() && !t.isControlDown()) {
+
+                        if (pathSeekerField.isPassable(coordinates.getKey(), coordinates.getValue())) {
+                            pathSeekerField.makeNonPassable(coordinates.getKey(), coordinates.getValue());
+                        } else {
+                            pathSeekerField.makePassable(coordinates.getKey(), coordinates.getValue());
+                        }
+                        pathSeekerField.reDrawField();
+                    }
+                    else if (t.isPrimaryButtonDown() && t.isControlDown()){
+                        int currentCost = pathSeekerField.getCostAmount(coordinates.getKey(),coordinates.getValue());
+                        TextInputDialog dialog = new TextInputDialog(String.valueOf(currentCost));
+                        dialog.setTitle("Редактирование стоимости");
+                        dialog.setHeaderText("Введите новую стоимость перемещения в клетку");
+
+                        Optional<String> newCost = dialog.showAndWait();
+                        if (newCost.isPresent()){
+                            int newCostValue = Integer.parseInt(newCost.get());
+                            pathSeekerField.setCostAmount(coordinates.getKey(), coordinates.getValue(), newCostValue);
+                        }
+                        pathSeekerField.reDrawField();
+                    }
+                });
+        //Drag agent or objective
+        canvasFieldPathFind.addEventHandler(MouseEvent.DRAG_DETECTED,
+                t -> {
+                    if(t.isSecondaryButtonDown()) {
+                        Pair<Integer, Integer> coordinates = getCoordinatesFromClick(pathSeekerField, t);
+                        if(coordinates.getKey() == pathSeekerField.getAgentAbsoluteX() && coordinates.getValue() == pathSeekerField.getAgentAbsoluteY())
+                        {
+                            isAgentDragged = true;
+                        }
+                        else if(coordinates.getKey() == pathSeekerField.getObjectiveAbsoluteX() && coordinates.getValue() == pathSeekerField.getObjectiveAbsoluteY())
+                        {
+                            isObjectiveDragged = true;
+                        }
+                    }
+                });
+
+        canvasFieldPathFind.addEventHandler(MouseEvent.MOUSE_RELEASED,
+                t -> {
+                    isAgentDragged = false;
+                    isObjectiveDragged = false;
+                });
+
+        canvasFieldPathFind.addEventHandler(MouseEvent.MOUSE_DRAGGED,
+                t -> {
+                    if(isAgentDragged || isObjectiveDragged) {
+                        Pair<Integer, Integer> coordinates = getCoordinatesFromClick(pathSeekerField, t);
+                        if(pathSeekerField.isPassable(coordinates.getKey(), coordinates.getValue())) {
+                            if(isAgentDragged){
+                                pathSeekerField.setAgentAbsoluteX(coordinates.getKey());
+                                pathSeekerField.setAgentAbsoluteY(coordinates.getValue());
+                            }
+                            else if(isObjectiveDragged)
+                            {
+                                pathSeekerField.setObjectiveAbsoluteX(coordinates.getKey());
+                                pathSeekerField.setObjectiveAbsoluteY(coordinates.getValue());
+                            }
+                            pathSeekerField.reDrawField();
+                        }
+                    }
+                });
+    }
+
+    private Pair<Integer, Integer> getCoordinatesFromClick(PathSeekerField pathSeekerField, MouseEvent mouseEvent)
+    {
+        int graphicalSize = pathSeekerField.getFieldGraphicalSize();
+        int x = (int)(mouseEvent.getX() / graphicalSize);
+        int y = (int)(mouseEvent.getY() / graphicalSize);
+        return new Pair<>(x, y);
     }
 
     public void beginTraverseButtonHandler(ActionEvent actionEvent) {
@@ -97,15 +173,13 @@ public class ViewController {
     }
 
     public void saveField(ActionEvent actionEvent) {
-        FileOutputStream fileOut = null;
+        FileOutputStream fileOut;
         try {
             fileOut = new FileOutputStream("D:/pathfind.map");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(pathSeekerField);
             out.close();
             fileOut.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -113,8 +187,8 @@ public class ViewController {
 
     public void loadField(ActionEvent actionEvent) {
         GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
-        FileInputStream fileIn = null;
-        PathSeekerField psfDeserialized = null;
+        FileInputStream fileIn;
+        PathSeekerField psfDeserialized;
         try {
             fileIn = new FileInputStream("D:/pathfind.map");
             ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -124,8 +198,6 @@ public class ViewController {
             in.close();
             fileIn.close();
             pathSeekerField.reDrawField();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
