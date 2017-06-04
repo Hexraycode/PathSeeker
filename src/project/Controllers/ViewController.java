@@ -12,6 +12,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import project.Fields.AgentField;
@@ -142,6 +144,10 @@ public class ViewController {
         timer.play();
     }
 
+    public void stopTraverseButtonHandler(ActionEvent actionEvent) {
+        timer.stop();
+    }
+
     public void doOneStepHandler(ActionEvent actionEvent) {
         agentField.doOneStep();
     }
@@ -173,35 +179,53 @@ public class ViewController {
     }
 
     public void saveField(ActionEvent actionEvent) {
-        FileOutputStream fileOut;
-        try {
-            fileOut = new FileOutputStream("D:/pathfind.map");
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(pathSeekerField);
-            out.close();
-            fileOut.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save field");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Field", "*.field"));
+        Window w = trashAverageAmountLabel.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(w);
+        if (file != null) {
+            FileOutputStream fileOut = null;
+            try {
+                fileOut = new FileOutputStream(file);
+                ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                out.writeObject(pathSeekerField);
+                out.close();
+                fileOut.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void loadField(ActionEvent actionEvent) {
         GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
-        FileInputStream fileIn;
-        PathSeekerField psfDeserialized;
-        try {
-            fileIn = new FileInputStream("D:/pathfind.map");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            psfDeserialized = (PathSeekerField) in.readObject();
-            psfDeserialized.setGlobalGraphicsContext(graphicsContextSeeker);
-            pathSeekerField = psfDeserialized;
-            in.close();
-            fileIn.close();
-            pathSeekerField.reDrawField();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Load field");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Field", "*.field"));
+        Window w = trashAverageAmountLabel.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(w);
+        if (file != null) {
+            FileInputStream fileIn = null;
+            PathSeekerField psfDeserialized = null;
+            try {
+                fileIn = new FileInputStream(file);
+                ObjectInputStream in = new ObjectInputStream(fileIn);
+                psfDeserialized = (PathSeekerField) in.readObject();
+                psfDeserialized.setGlobalGraphicsContext(graphicsContextSeeker);
+                pathSeekerField = psfDeserialized;
+                in.close();
+                fileIn.close();
+                pathSeekerField.reDrawField();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

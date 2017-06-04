@@ -27,7 +27,7 @@
                                        <children>
                                           <Button mnemonicParsing="false" onAction="#doOneStepHandler" text="Do one step" />
                                           <Button mnemonicParsing="false" onAction="#beginTraverseButtonHandler" text="Begin traverse" />
-
+                                           <Button mnemonicParsing="false" onAction="#stopTraverseButtonHandler" text="Stop traverse" />
                                           <Label fx:id="agentBouncesCountLabel" text="Bounces: " />
                                           <Label fx:id="trashAverageAmountLabel" text="Trash avg: " />
                                            <Label text="Trash probability amount: " />
