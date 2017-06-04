@@ -295,4 +295,8 @@ public class ViewController {
             }
         }
     }
+
+    public void doClearField(ActionEvent actionEvent) {
+        pathSeekerField.clearField();
+    }
 }

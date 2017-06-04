@@ -492,4 +492,15 @@ public class PathSeekerField implements Serializable {
             }
         }
     }
+
+    public void clearField() {
+        for (int i = 0; i < fieldWidth; i++){
+            for (int j = 0; j < fieldHeight; j++) {
+                if(fieldNodes[i][j].isPassable()){
+                    fieldNodes[i][j].setColor(Color.LIGHTGREEN);
+                }
+            }
+        }
+        reDrawField();
+    }
 }
