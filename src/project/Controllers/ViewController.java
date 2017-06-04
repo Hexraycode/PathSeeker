@@ -20,18 +20,14 @@ import project.Fields.AgentField;
 import project.Fields.PathSeekerField;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.Properties;
 
 
 public class ViewController {
-    @FXML
-    public TextField agentPositionX;
-    @FXML
-    public TextField agentPositionY;
-    @FXML
-    public TextField objectivePositionX;
-    @FXML
-    public TextField objectivePositionY;
     @FXML
     private TextField fieldSize;
     @FXML
@@ -48,6 +44,9 @@ public class ViewController {
     private AgentField agentField;
     private PathSeekerField pathSeekerField;
     private Timeline timer;
+    private Path propertiesPath = Paths.get("config.properties");
+    private String propertiesAbsolutePath = propertiesPath.toAbsolutePath().toString();
+    private File propertiesFile = new File(propertiesAbsolutePath);
 
     private boolean isObjectiveDragged;
     private boolean isAgentDragged;
@@ -55,14 +54,20 @@ public class ViewController {
     public void initialize(){
         GraphicsContext graphicsContextAgent = canvasFieldAgent.getGraphicsContext2D();
         agentField = new AgentField(graphicsContextAgent, 20, 20, 20);
+        GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
+        pathSeekerField = initializePathSeekerField(graphicsContextSeeker);
+
         timer = new Timeline(new KeyFrame(Duration.millis(5), event -> {
             agentField.doOneStep();
             agentBouncesCountLabel.setText("Bounced: " + agentField.getAgentBounces());
             trashAverageAmountLabel.setText("Trash avg: " + agentField.getTrashAverageAmount());
         }));
         timer.setCycleCount(Timeline.INDEFINITE);
-        GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
-        pathSeekerField = new PathSeekerField(graphicsContextSeeker, 20, 20, 20);
+
+        bindEvents();
+    }
+
+    private void bindEvents(){
         //Make node passable or non-passable
         canvasFieldPathFind.addEventHandler(MouseEvent.MOUSE_PRESSED,
                 t -> {
@@ -110,6 +115,18 @@ public class ViewController {
                 t -> {
                     isAgentDragged = false;
                     isObjectiveDragged = false;
+                    Properties properties = new Properties();
+                    properties.setProperty("pathSeekerField.agent.x", String.valueOf(pathSeekerField.getAgentAbsoluteX()));
+                    properties.setProperty("pathSeekerField.agent.y", String.valueOf(pathSeekerField.getAgentAbsoluteY()));
+                    properties.setProperty("pathSeekerField.objective.x", String.valueOf(pathSeekerField.getObjectiveAbsoluteX()));
+                    properties.setProperty("pathSeekerField.objective.y", String.valueOf(pathSeekerField.getObjectiveAbsoluteY()));
+                    try {
+                        FileOutputStream out = new FileOutputStream(propertiesAbsolutePath);
+                        properties.store(out, null);
+                        out.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 });
 
         canvasFieldPathFind.addEventHandler(MouseEvent.MOUSE_DRAGGED,
@@ -169,13 +186,62 @@ public class ViewController {
         pathSeekerField.findPathDStar();
     }
 
-    public void doRegenerateField(ActionEvent actionEvent) {
-        int objectiveAbsoluteX = Integer.parseInt(objectivePositionX.getText());;
-        int objectiveAbsoluteY = Integer.parseInt(objectivePositionY.getText());;
-        int agentAbsoluteX = Integer.parseInt(agentPositionX.getText());;
-        int agentAbsoluteY = Integer.parseInt(agentPositionY.getText());;
+    private PathSeekerField initializePathSeekerField(GraphicsContext graphicsContextSeeker){
+        PathSeekerField pathSeekerField = null;
 
-        pathSeekerField.generateField(agentAbsoluteX, agentAbsoluteY, objectiveAbsoluteX, objectiveAbsoluteY);
+        //Create if not exists
+        if (Files.notExists(propertiesPath)) {
+            try {
+                int defaultAgentAbsoluteX = 3;
+                int defaultAgentAbsoluteY = 3;
+                int defaultObjectiveAbsoluteX = 15;
+                int defaultObjectiveAbsoluteY = 15;
+                propertiesFile.createNewFile();
+                Properties properties = new Properties();
+                properties.setProperty("pathSeekerField.agent.x", String.valueOf(defaultAgentAbsoluteX));
+                properties.setProperty("pathSeekerField.agent.y", String.valueOf(defaultAgentAbsoluteY));
+                properties.setProperty("pathSeekerField.objective.x", String.valueOf(defaultObjectiveAbsoluteX));
+                properties.setProperty("pathSeekerField.objective.y", String.valueOf(defaultObjectiveAbsoluteY));
+                FileOutputStream out = new FileOutputStream(propertiesAbsolutePath);
+                properties.store(out, null);
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        //Load properties
+        try {
+            FileInputStream fis = new FileInputStream(propertiesAbsolutePath);
+            Properties properties = new Properties();
+            properties.load(fis);
+            fis.close();
+            int agentAbsoluteX = Integer.parseInt(properties.getProperty("pathSeekerField.agent.x"));
+            int agentAbsoluteY = Integer.parseInt(properties.getProperty("pathSeekerField.agent.y"));
+            int objectiveAbsoluteX = Integer.parseInt(properties.getProperty("pathSeekerField.objective.x"));
+            int objectiveAbsoluteY = Integer.parseInt(properties.getProperty("pathSeekerField.objective.y"));
+            pathSeekerField = new PathSeekerField(graphicsContextSeeker, 20, 20, 20, agentAbsoluteX, agentAbsoluteY, objectiveAbsoluteX, objectiveAbsoluteY);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return pathSeekerField;
+    }
+
+    public void doRegenerateField(ActionEvent actionEvent) {
+        //Load properties
+        try {
+            FileInputStream fis = new FileInputStream(propertiesAbsolutePath);
+            Properties properties = new Properties();
+            properties.load(fis);
+            int agentAbsoluteX = Integer.parseInt(properties.getProperty("pathSeekerField.agent.x"));
+            int agentAbsoluteY = Integer.parseInt(properties.getProperty("pathSeekerField.agent.y"));
+            int objectiveAbsoluteX = Integer.parseInt(properties.getProperty("pathSeekerField.objective.x"));
+            int objectiveAbsoluteY = Integer.parseInt(properties.getProperty("pathSeekerField.objective.y"));
+            pathSeekerField.generateField(agentAbsoluteX, agentAbsoluteY, objectiveAbsoluteX, objectiveAbsoluteY);
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public void saveField(ActionEvent actionEvent) {

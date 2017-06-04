@@ -34,13 +34,14 @@ public class PathSeekerField implements Serializable {
 
     private transient GraphicsContext graphicsContext;
 
-    public PathSeekerField(GraphicsContext graphicsContext, int fieldWidth, int fieldHeight, int fieldGraphicalSize){
+    public PathSeekerField(GraphicsContext graphicsContext, int fieldWidth, int fieldHeight, int fieldGraphicalSize,
+                           int agentAbsoluteX, int agentAbsoluteY, int objectiveAbsoluteX, int objectiveAbsoluteY){
         // Determining of sizes
         this.graphicsContext = graphicsContext;
         this.fieldWidth = fieldWidth;
         this.fieldHeight = fieldHeight;
         this.fieldGraphicalSize = fieldGraphicalSize;
-        generateField(3, 3, 17, 17);
+        generateField(agentAbsoluteX, agentAbsoluteY, objectiveAbsoluteX, objectiveAbsoluteY);
     }
 
     private double computeDistance(Integer x1, Integer y1, Integer x2, Integer y2)
