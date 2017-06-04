@@ -127,6 +127,7 @@ public class ViewController {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    pathSeekerField.recomputeDistance();
                 });
 
         canvasFieldPathFind.addEventHandler(MouseEvent.MOUSE_DRAGGED,

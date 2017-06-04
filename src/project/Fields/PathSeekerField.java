@@ -460,4 +460,36 @@ public class PathSeekerField implements Serializable {
     public void setCostAmount(int x, int y, int cost){
         fieldNodes[x][y].setCost(cost);
     }
+
+    public int getFieldWidth() {
+        return fieldWidth;
+    }
+
+    public void setFieldWidth(int fieldWidth) {
+        this.fieldWidth = fieldWidth;
+    }
+
+    public int getFieldHeight() {
+        return fieldHeight;
+    }
+
+    public void setFieldHeight(int fieldHeight) {
+        this.fieldHeight = fieldHeight;
+    }
+
+    public PathNode[][] getFieldNodes() {
+        return fieldNodes;
+    }
+
+    public void setFieldNodes(PathNode[][] fieldNodes) {
+        this.fieldNodes = fieldNodes;
+    }
+
+    public void recomputeDistance() {
+        for (int i = 0; i < fieldWidth; i++){
+            for (int j = 0; j < fieldHeight; j++) {
+                fieldNodes[i][j].setDistanceToTarget(computeDistance(i,j, this.objectiveAbsoluteX, this.objectiveAbsoluteY));
+            }
+        }
+    }
 }
