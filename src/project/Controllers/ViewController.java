@@ -7,6 +7,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
@@ -28,6 +29,10 @@ import java.util.Properties;
 
 
 public class ViewController {
+    @FXML
+    public ComboBox comboBoxCoefficient;
+    @FXML
+    public ComboBox comboBoxFieldSize;
     @FXML
     private TextField fieldSize;
     @FXML
@@ -52,10 +57,35 @@ public class ViewController {
     private boolean isAgentDragged;
 
     public void initialize(){
-        GraphicsContext graphicsContextAgent = canvasFieldAgent.getGraphicsContext2D();
-        agentField = new AgentField(graphicsContextAgent, 20, 20, 20);
+        //GraphicsContext graphicsContextAgent = canvasFieldAgent.getGraphicsContext2D();
+        //agentField = new AgentField(graphicsContextAgent, 20, 20, 20);
+        comboBoxCoefficient.getItems().add("0.1");
+        comboBoxCoefficient.getItems().add("0.2");
+        comboBoxCoefficient.getItems().add("0.3");
+        comboBoxCoefficient.getItems().add("0.4");
+        comboBoxCoefficient.setValue("0.1");
+
+        comboBoxFieldSize.getItems().add("15");
+        comboBoxFieldSize.getItems().add("20");
+        comboBoxFieldSize.getItems().add("25");
+        comboBoxFieldSize.getItems().add("30");
+        comboBoxFieldSize.setValue("15");
         GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
         pathSeekerField = initializePathSeekerField(graphicsContextSeeker);
+
+        comboBoxFieldSize.setOnAction(event ->
+        {
+            pathSeekerField = initializePathSeekerField(graphicsContextSeeker);
+            pathSeekerField.reDrawField();
+        });
+
+        comboBoxCoefficient.setOnAction(event -> {
+            String val = comboBoxCoefficient.getValue().toString();
+            Double valueDouble = Double.parseDouble(val);
+            pathSeekerField.setCoefficient(valueDouble);
+            doRegenerateField(null);
+
+        });
 
         timer = new Timeline(new KeyFrame(Duration.millis(5), event -> {
             agentField.doOneStep();
@@ -220,7 +250,9 @@ public class ViewController {
             int agentAbsoluteY = Integer.parseInt(properties.getProperty("pathSeekerField.agent.y"));
             int objectiveAbsoluteX = Integer.parseInt(properties.getProperty("pathSeekerField.objective.x"));
             int objectiveAbsoluteY = Integer.parseInt(properties.getProperty("pathSeekerField.objective.y"));
-            pathSeekerField = new PathSeekerField(graphicsContextSeeker, 20, 20, 20, agentAbsoluteX, agentAbsoluteY, objectiveAbsoluteX, objectiveAbsoluteY);
+            String val = comboBoxFieldSize.getValue().toString();
+            Integer valueInt = Integer.parseInt(val);
+            pathSeekerField = new PathSeekerField(graphicsContextSeeker, valueInt, valueInt, 20, agentAbsoluteX, agentAbsoluteY, objectiveAbsoluteX, objectiveAbsoluteY);
         } catch (IOException e) {
             e.printStackTrace();
         }

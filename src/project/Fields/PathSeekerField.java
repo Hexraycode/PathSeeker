@@ -34,6 +34,8 @@ public class PathSeekerField implements Serializable {
 
     private transient GraphicsContext graphicsContext;
 
+    private double coefficient;
+
     public PathSeekerField(GraphicsContext graphicsContext, int fieldWidth, int fieldHeight, int fieldGraphicalSize,
                            int agentAbsoluteX, int agentAbsoluteY, int objectiveAbsoluteX, int objectiveAbsoluteY){
         // Determining of sizes
@@ -41,6 +43,7 @@ public class PathSeekerField implements Serializable {
         this.fieldWidth = fieldWidth;
         this.fieldHeight = fieldHeight;
         this.fieldGraphicalSize = fieldGraphicalSize;
+        this.coefficient = 0.1;
         generateField(agentAbsoluteX, agentAbsoluteY, objectiveAbsoluteX, objectiveAbsoluteY);
     }
 
@@ -52,6 +55,7 @@ public class PathSeekerField implements Serializable {
     }
 
     public void reDrawField(){
+        graphicsContext.clearRect(0,0, 2000, 2000);
         for (int i = 0; i < fieldWidth ; i++) {
             for (int j = 0; j < fieldHeight ; j++) {
                 fieldNodes[i][j].draw(i, j, fieldGraphicalSize);
@@ -103,7 +107,7 @@ public class PathSeekerField implements Serializable {
             makeNonPassable(0, i);
             makeNonPassable(fieldWidth - 1, i);
         }
-        generateObstacles(70);
+        generateObstacles((int)(fieldWidth * fieldHeight * coefficient));
         generateCosts();
         reDrawField();
     }
@@ -117,6 +121,14 @@ public class PathSeekerField implements Serializable {
                 }
             }
         }
+    }
+
+    public double getCoefficient() {
+        return coefficient;
+    }
+
+    public void setCoefficient(double coefficient) {
+        this.coefficient = coefficient;
     }
 
     private void generateObstacles(int count){

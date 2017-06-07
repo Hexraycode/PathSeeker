@@ -29,9 +29,6 @@ public class AgentField {
     private GraphicsContext graphicsContext;
 
     public AgentField(GraphicsContext graphicsContext, int fieldWidth, int fieldHeight, int fieldGraphicalSize){
-        Comparator<FieldNode> comparator = Comparator.comparing(fieldNode -> fieldNode.isPassable());
-        comparator = comparator.thenComparing(Comparator.comparing(fieldNode -> fieldNode.getTrashAmount()));
-
         //Determining of sizes
         this.graphicsContext = graphicsContext;
         this.fieldWidth = fieldWidth;
