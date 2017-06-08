@@ -52,11 +52,12 @@ public class ViewController {
     private Path propertiesPath = Paths.get("config.properties");
     private String propertiesAbsolutePath = propertiesPath.toAbsolutePath().toString();
     private File propertiesFile = new File(propertiesAbsolutePath);
+    private GraphicsContext graphicsContextSeeker;
 
     private boolean isObjectiveDragged;
     private boolean isAgentDragged;
 
-    public void initialize(){
+    public void initialize() {
         //GraphicsContext graphicsContextAgent = canvasFieldAgent.getGraphicsContext2D();
         //agentField = new AgentField(graphicsContextAgent, 20, 20, 20);
         comboBoxCoefficient.getItems().add("0.1");
@@ -70,6 +71,7 @@ public class ViewController {
         comboBoxFieldSize.getItems().add("25");
         comboBoxFieldSize.getItems().add("30");
         comboBoxFieldSize.setValue("15");
+        graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
         GraphicsContext graphicsContextSeeker = canvasFieldPathFind.getGraphicsContext2D();
         pathSeekerField = initializePathSeekerField(graphicsContextSeeker);
 
@@ -97,12 +99,12 @@ public class ViewController {
         bindEvents();
     }
 
-    private void bindEvents(){
+    private void bindEvents() {
         //Make node passable or non-passable
         canvasFieldPathFind.addEventHandler(MouseEvent.MOUSE_PRESSED,
                 t -> {
                     Pair<Integer, Integer> coordinates = getCoordinatesFromClick(pathSeekerField, t);
-                    if(t.isPrimaryButtonDown() && !t.isControlDown()) {
+                    if (t.isPrimaryButtonDown() && !t.isControlDown()) {
 
                         if (pathSeekerField.isPassable(coordinates.getKey(), coordinates.getValue())) {
                             pathSeekerField.makeNonPassable(coordinates.getKey(), coordinates.getValue());
@@ -110,15 +112,14 @@ public class ViewController {
                             pathSeekerField.makePassable(coordinates.getKey(), coordinates.getValue());
                         }
                         pathSeekerField.reDrawField();
-                    }
-                    else if (t.isPrimaryButtonDown() && t.isControlDown()){
-                        int currentCost = pathSeekerField.getCostAmount(coordinates.getKey(),coordinates.getValue());
+                    } else if (t.isPrimaryButtonDown() && t.isControlDown()) {
+                        int currentCost = pathSeekerField.getCostAmount(coordinates.getKey(), coordinates.getValue());
                         TextInputDialog dialog = new TextInputDialog(String.valueOf(currentCost));
                         dialog.setTitle("Редактирование стоимости");
                         dialog.setHeaderText("Введите новую стоимость перемещения в клетку");
 
                         Optional<String> newCost = dialog.showAndWait();
-                        if (newCost.isPresent()){
+                        if (newCost.isPresent()) {
                             int newCostValue = Integer.parseInt(newCost.get());
                             pathSeekerField.setCostAmount(coordinates.getKey(), coordinates.getValue(), newCostValue);
                         }
@@ -128,14 +129,11 @@ public class ViewController {
         //Drag agent or objective
         canvasFieldPathFind.addEventHandler(MouseEvent.DRAG_DETECTED,
                 t -> {
-                    if(t.isSecondaryButtonDown()) {
+                    if (t.isSecondaryButtonDown()) {
                         Pair<Integer, Integer> coordinates = getCoordinatesFromClick(pathSeekerField, t);
-                        if(coordinates.getKey() == pathSeekerField.getAgentAbsoluteX() && coordinates.getValue() == pathSeekerField.getAgentAbsoluteY())
-                        {
+                        if (coordinates.getKey() == pathSeekerField.getAgentAbsoluteX() && coordinates.getValue() == pathSeekerField.getAgentAbsoluteY()) {
                             isAgentDragged = true;
-                        }
-                        else if(coordinates.getKey() == pathSeekerField.getObjectiveAbsoluteX() && coordinates.getValue() == pathSeekerField.getObjectiveAbsoluteY())
-                        {
+                        } else if (coordinates.getKey() == pathSeekerField.getObjectiveAbsoluteX() && coordinates.getValue() == pathSeekerField.getObjectiveAbsoluteY()) {
                             isObjectiveDragged = true;
                         }
                     }
@@ -162,15 +160,13 @@ public class ViewController {
 
         canvasFieldPathFind.addEventHandler(MouseEvent.MOUSE_DRAGGED,
                 t -> {
-                    if(isAgentDragged || isObjectiveDragged) {
+                    if (isAgentDragged || isObjectiveDragged) {
                         Pair<Integer, Integer> coordinates = getCoordinatesFromClick(pathSeekerField, t);
-                        if(pathSeekerField.isPassable(coordinates.getKey(), coordinates.getValue())) {
-                            if(isAgentDragged){
+                        if (pathSeekerField.isPassable(coordinates.getKey(), coordinates.getValue())) {
+                            if (isAgentDragged) {
                                 pathSeekerField.setAgentAbsoluteX(coordinates.getKey());
                                 pathSeekerField.setAgentAbsoluteY(coordinates.getValue());
-                            }
-                            else if(isObjectiveDragged)
-                            {
+                            } else if (isObjectiveDragged) {
                                 pathSeekerField.setObjectiveAbsoluteX(coordinates.getKey());
                                 pathSeekerField.setObjectiveAbsoluteY(coordinates.getValue());
                             }
@@ -180,11 +176,10 @@ public class ViewController {
                 });
     }
 
-    private Pair<Integer, Integer> getCoordinatesFromClick(PathSeekerField pathSeekerField, MouseEvent mouseEvent)
-    {
+    private Pair<Integer, Integer> getCoordinatesFromClick(PathSeekerField pathSeekerField, MouseEvent mouseEvent) {
         int graphicalSize = pathSeekerField.getFieldGraphicalSize();
-        int x = (int)(mouseEvent.getX() / graphicalSize);
-        int y = (int)(mouseEvent.getY() / graphicalSize);
+        int x = (int) (mouseEvent.getX() / graphicalSize);
+        int y = (int) (mouseEvent.getY() / graphicalSize);
         return new Pair<>(x, y);
     }
 
@@ -217,7 +212,7 @@ public class ViewController {
         pathSeekerField.findPathDStar();
     }
 
-    private PathSeekerField initializePathSeekerField(GraphicsContext graphicsContextSeeker){
+    private PathSeekerField initializePathSeekerField(GraphicsContext graphicsContextSeeker) {
         PathSeekerField pathSeekerField = null;
 
         //Create if not exists
@@ -330,5 +325,39 @@ public class ViewController {
 
     public void doClearField(ActionEvent actionEvent) {
         pathSeekerField.clearField();
+    }
+
+    public void doStatistics(ActionEvent actionEvent) throws InterruptedException {
+        int startSize = 5;
+        double startCoeff = 0.1;
+        // Сгенерировать поле
+        for (int i = 2; i < 11; i++) {
+            for (double j = startCoeff; j < 0.6; j+=0.1) {
+                int size = startSize * i;
+                comboBoxFieldSize.setValue(size);
+                comboBoxCoefficient.setValue(j);
+                int goal = size - 2;
+                for (int iter = 0; iter < 2; iter++) {
+                    pathSeekerField = initializePathSeekerField(graphicsContextSeeker);
+                    System.out.println("Размер поля: " + size + ", коэффициент: " + j + ", итерация: " + iter);
+                    pathSeekerField.setObjectiveAbsoluteX(goal);
+                    pathSeekerField.setObjectiveAbsoluteY(goal);
+                    pathSeekerField.getFieldNodes()[goal][goal].setPassable(true);
+                    pathSeekerField.recomputeDistance();
+                    long t1Dijkstra = System.currentTimeMillis();
+                    pathSeekerField.findPathDijkstra();
+                    long t2Dijkstra = System.currentTimeMillis();
+                    long lengthDijkstra = t2Dijkstra - t1Dijkstra;
+                    System.out.println("Время: " + lengthDijkstra + " мс");
+                    long t1AStar = System.currentTimeMillis();
+                    pathSeekerField.findPathAStar();
+                    long t2AStar = System.currentTimeMillis();
+                    long lengthAStar = t2AStar - t1AStar;
+                    System.out.println("Время: " + lengthAStar + " мс");
+                    System.out.println();
+                }
+            }
+
+        }
     }
 }

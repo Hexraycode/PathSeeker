@@ -186,7 +186,7 @@ public class PathSeekerField implements Serializable {
                 objectiveReached = true;
                 System.out.println("Алгоритм A* нашел путь стоимостью " + currentNode.getMinCost() + " за "
                         + iterator + " итераций: ");
-                printSolveAStar(currentNode);
+//                printSolveAStar(currentNode);
                 break;
             }
             openList.remove();
@@ -320,7 +320,7 @@ public class PathSeekerField implements Serializable {
             System.out.println("Алгоритм Дейкстры нашел кратчайший путь стоимостью " + currentNode.getMinCost() + " за "
                     + iterator + " итераций: ");
             // Шаг 5: Строим маршрут
-            printSolveDijkstra(currentNode);
+//            printSolveDijkstra(currentNode);
         }
         else System.out.println("Стартовый элемент не найден в списке");
         reDrawField();

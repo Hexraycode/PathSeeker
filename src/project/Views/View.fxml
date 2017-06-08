@@ -77,6 +77,7 @@
                                              <Button mnemonicParsing="false" onAction="#doClearField" text="Clear field" />
                                           <ComboBox fx:id="comboBoxCoefficient" prefWidth="150.0" />
                                           <ComboBox fx:id="comboBoxFieldSize" prefWidth="150.0" />
+                                             <Button mnemonicParsing="false" onAction="#doStatistics" text="Statistics"/>
                                          </children>
                                          <padding>
                                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
